@@ -33,6 +33,7 @@ vignettes/*.pdf
 *.knit.md
 
 # Mac temporary files
+.DS_Store
 **/.DS_Store
 **/__pycache__/
 
