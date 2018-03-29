@@ -34,7 +34,6 @@ vignettes/*.pdf
 
 # Mac temporary files
 **/.DS_Store
-**/__pycache__/
 
 # Pip install
 build/
@@ -55,4 +54,3 @@ Data/
 **/*.pyc
 
 # Notes
-
