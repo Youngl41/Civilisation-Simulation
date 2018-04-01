@@ -17,8 +17,9 @@ import pandas as pd
 import random as rnd
 from copy import deepcopy
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
-sys.path.append('/Users/Young/Documents/Capgemini/Learning/Machine Learning/Reinforcement Learning/Civilisation Simulation/Scripts/Simulation Functions')
+sys.path.append('/Users/Young/Documents/Capgemini/Learning/Machine Learning/Reinforcement Learning/Civilisation-Simulation/Scripts/Simulation Functions')
 from simulation_utility import sample_coords
 from simulation_utility import find_possible_actions
 
@@ -82,7 +83,7 @@ class GridWorld:
             self.positions.append(positions)
             self.time = self.time+1
         
-    def show_grid(self, time = None):
+    def show_board(self, time = None):
         '''
         Displays and updates board with every blob same colour, except for when 
         they stack.
@@ -107,11 +108,53 @@ class GridWorld:
         #plt.grid(color = 'white')
         plt.colorbar()
         plt.show()
+    
+    def update_board(self, time = None):
+        '''
+        Updates and returns board with every blob same colour, except for when 
+        they stack.
+        '''
+        if not time:
+            time = self.time
         
-
-
-
+        # Make clean board
+        valid_grid = 1-np.isnan(grid)
+        board = valid_grid-1
+            
+        # Update board
+        for index, position in self.positions[time]:
+            pos_h = position[0]
+            pos_w = position[1]
+            board[pos_h][pos_w] = board[pos_h][pos_w] + 1
         
+        return board
+    
+    def save_video(self, save_path, start_time = 0, end_time = 50, 
+                   fps = 5, dpi = 60, figsize=(5,8)):
+        '''
+        Saves video of frames from start_time to end_time
+        they stack.
+        '''
+        def update_frame(t):
+            ax.imshow(g.update_board(time=t), interpolation='nearest')
+            ax.grid(color='white')
+            ax.set_axis_off()
+        
+        fig, ax = plt.subplots(figsize=figsize)
+        animation = FuncAnimation(fig, update_frame, repeat=False, 
+                                  frames=np.arange(start_time, end_time))
+        
+        # Gif
+        if save_path[-4:].lower() == '.gif':
+            animation.save(save_path, dpi=60, fps=5, writer='imagemagick')
+        elif save_path[-4:].lower() == '.mp4':
+            writer = animation.FFMpegFileWriter(fps=fps)
+            animation.save(save_path, dpi=60, writer = writer)
+        else:
+            error_msg = 'ERROR: unknown file type "' + save_path.split('.')[-1] + '".'
+            raise Exception(error_msg)
+
+
 # Test
 rnd.seed(42)
 grid = np.zeros((5,7))
@@ -121,25 +164,39 @@ print (grid)
 
 g = GridWorld.create(grid, 1)
 g.populate()
-g.show_grid()
+g.show_board()
 %time g.play(duration=10000)
-g.show_grid()
+g.show_board()
 
 
 
 g.reset()
 g.populate()
-g.show_grid()
+g.show_board()
 
 plt.imshow(g.board, interpolation='nearest')
 plt.colorbar()
 plt.show()
 
 
+def update_frame(i):
+    g.play(duration=1)
+    ax.imshow(g.update_board(), interpolation='nearest')
+    ax.grid(color='white')
+    ax.set_axis_off()
 
 
+fig, ax = plt.subplots(figsize=(5, 8))
+anim = FuncAnimation(fig, update_frame, repeat=False, frames=np.arange(0, 50))
 
+%time anim.save('/Users/Young/Documents/Capgemini/Learning/Machine Learning/Reinforcement Learning/Civilisation-Simulation/Temp/temp.gif', dpi=60, fps=5, writer='imagemagick')
 
+# Save
+fps = 5
+#dpi = 10
+save_name = '/Users/Young/Documents/Capgemini/Learning/Machine Learning/Reinforcement Learning/Civilisation-Simulation/Temp/'
+writer=animation.FFMpegFileWriter(fps=fps)
+ 
 
 
 
