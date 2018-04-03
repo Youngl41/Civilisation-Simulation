@@ -37,10 +37,12 @@ class GridWorld:
         self.population_count = population_count
         self.time = -1
         self.status = 'Not Started'
+        self.rewards = 0
         if initial_state:
             self.positions = initial_state
             self.time = 0
             self.status = 'In progress'
+            ###### Create blob classes
         print ('\nGridWorld created!\n')
 
     @classmethod
@@ -92,6 +94,8 @@ class GridWorld:
             self.time = self.time+1
             
             # Update rewards
+            for index, position in self.positions[-1]:
+                self.rewards = self.rewards + self.grid[position[0]][position[1]]
             
             # Check world end
             if self.population_count <= 0:
@@ -180,6 +184,46 @@ class GridWorld:
                         + save_path.split('.')[-1] + '".'
             raise Exception(error_msg)
 
+grid = np.zeros((3,5))
+grid[1][4] = 1
+grid[0] = [-10, -10, -10, -10, -10]
+grid[2] = [-10, -10, -10, -10, -10]
+value_matrix = np.zeros(grid.shape)
+class Blob:
+    def __init__(self, time, max_age, positions, value_grid):
+        self.id = positions[-1][0][0]
+        self.time = time
+        self.max_age = max_age
+        self.positions = positions
+        self.value_grid = value_grid
+        self.status = 'Alive'
+    def check_status(self):
+        if self.time >= self.max_age:
+            self.status = 'Died of old age'
+            print ('Blob id',str(self.id), 'dead. \t-', self.status)
+    def check_actions_and_update_values(self, grid, beta):
+        latest_position = self.positions[-1][0][-1] # [-1] for latest, then [0]
+        # because there is only one index and [-1] for the coordinate
+        possible_action_states = find_possible_actions(grid, latest_position)
+        q_values = []
+        for action_state in possible_action_states:
+            q_value = grid[action_state] + beta * self.value_grid[action_state]
+            q_values.append(q_value)
+        q_values = np.array(q_values)
+        
+        # Take random tie breaking max q values
+        max_q_value_idx = np.random.choice(np.flatnonzero(q_values == q_values.max()))
+        max_q_value = q_values[max_q_value_idx]
+        best_action = possible_action_states[max_q_value_idx]
+        
+        # Update value_grid
+        self.value_grid[latest_position] = max_q_value
+        return best_action
+
+
+blob = Blob(time=0, max_age=30, positions=g1.positions, value_grid = np.zeros(g1.grid.shape))
+blob.check_actions_and_update_values(grid=g1.grid, beta=0.5)
+
 
 # =============================================================================
 # Unit Test
@@ -232,7 +276,7 @@ g1.show_board(figsize=(8,5), reward_overlay = True)
 
 g1.play(duration=1)
 g1.show_board(figsize=(8,5), reward_overlay = True)
-
+g1.rewards
 
 
 g.show_board(figsize=(8,5), reward_overlay = True)
