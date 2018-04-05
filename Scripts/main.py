@@ -151,7 +151,8 @@ grid[3] = [-10, -10, -10, -10, -10]
 
 # Populate gridworld
 g1 = GridWorld.create(grid=grid, population_count=1, 
-                      initial_state = [[[0, (2,0)]]])
+                      initial_state = [[[0, (2,0)]]],
+                      verbose=False)
 g1.populate()
 g1.show_board(figsize=(8,5), reward_overlay = True)
 
@@ -163,7 +164,7 @@ g1.reset(population_count=1, inherit=True)
 print (g1.blobs[0].value_grid)
 
 # Iterate
-itertion_number = 100
+itertion_number = 3000
 rewards_list = []
 for play_number in range(itertion_number):
     g1.play(duration=30, beta=0.9)

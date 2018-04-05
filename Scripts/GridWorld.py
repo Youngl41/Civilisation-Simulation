@@ -158,7 +158,7 @@ class GridWorld:
             positions = []
             blobs = []
             for blob in self.blobs:
-                new_pos = blob.update_and_get_plan(grid=self.grid, beta=beta)
+                new_pos = blob.update_and_get_policy(grid=self.grid, beta=beta, reroll_chance=0.1)
                 positions.append([blob.name, new_pos])
                 blob.coords = new_pos
                 blobs.append(blob)
@@ -197,7 +197,7 @@ class GridWorld:
             time = self.time
         
         # Make clean board
-        valid_rid = 1-np.isnan(self.grid)
+        valid_grid = 1-np.isnan(self.grid)
         board = valid_grid-1
             
         # Update board
@@ -367,7 +367,7 @@ class GridWorld:
 #grid[3] = [-10, -10, -10, -10, -10]
 #
 ## Populate gridworld
-#check_actions_and_update_values = GridWorld.create(grid=grid, population_count=1, 
+#g1 = GridWorld.create(grid=grid, population_count=1, 
 #                      initial_state = [[[0, (2,0)]]])
 #g1.populate()
 #g1.show_board(figsize=(8,5), reward_overlay = True)

@@ -41,19 +41,31 @@ class Blob:
 #            self.status = 'Died of old age'
 #            print ('Blob id',str(self.id), 'dead. \t-', self.status)
 #            
-    def update_and_get_policy(self, grid, beta):
-            possible_action_states = find_possible_actions(grid, self.coords)
-            q_values = []
-            for action_state in possible_action_states:
-                q_value = grid[self.coords] + beta * self.value_grid[action_state]
-                q_values.append(q_value)
-            q_values = np.array(q_values)
+    def update_and_get_policy(self, grid, beta, reroll_chance=0.1):
+        possible_action_states = find_possible_actions(grid, self.coords)
+        q_values = []
+        for action_state in possible_action_states:
+            q_value = grid[self.coords] + beta * self.value_grid[action_state]
+            q_values.append(q_value)
+        q_values = np.array(q_values)
+        
+        # Take random tie breaking max q values
+        max_q_value_idx = np.random.choice(np.flatnonzero(q_values == q_values.max()))
+        
+        # Best action occurs with x% chance
+        reroll_flag = (np.random.uniform() < reroll_chance)
+        if reroll_flag:
+            random_idx = rnd.sample(range(len(possible_action_states)), 1)[0]
+            random_q_value = q_values[random_idx]
+            random_action = possible_action_states[random_idx]
             
-            # Take random tie breaking max q values
-            max_q_value_idx = np.random.choice(np.flatnonzero(q_values == q_values.max()))
+            # Update value_grid
+            self.value_grid[self.coords] = random_q_value
+            return random_action
+        else:
             max_q_value = q_values[max_q_value_idx]
             best_action = possible_action_states[max_q_value_idx]
-            
+        
             # Update value_grid
             self.value_grid[self.coords] = max_q_value
             return best_action
