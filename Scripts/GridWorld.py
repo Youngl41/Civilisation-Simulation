@@ -34,24 +34,23 @@ from simulation_utility import find_possible_actions
 # Main
 #==============================================================================
 class GridWorld:
-    def __init__(self, grid, population_count, initial_state = None):
+    def __init__(self, grid, population_count, initial_state = None, verbose=True):
         self.grid = grid
         self.population_count = population_count
         self.beginning_population_count = population_count
         self.time = -1
         self.status = 'Not Started'
         self.total_rewards = 0
+        self.verbose = verbose
         if initial_state:
             self.positions = initial_state
             self.beginning_positions = deepcopy(initial_state)
-        print ('\nGridWorld created!\n')
+        if self.verbose:
+            print ('\nGridWorld created!\n')
 
     @classmethod
-    def create(cls, grid, population_count, initial_state=None):
-        if not initial_state:
-            return cls(grid, population_count)
-        else:
-            return cls(grid, population_count, initial_state)
+    def create(cls, grid, population_count, initial_state=None, verbose=True):
+            return cls(grid, population_count, initial_state, verbose)
     
     def populate(self):
         # Check if grid has already been populated
@@ -89,7 +88,8 @@ class GridWorld:
         # Update parameters
         self.time = 0
         self.status = 'In progress'
-        print ('\nGridWorld populated.\n')
+        if self.verbose:
+            print ('\nGridWorld populated.\n')
         
     def reset(self, population_count, inherit=True):
         '''
@@ -130,14 +130,16 @@ class GridWorld:
             self.blobs = blobs
             self.time = 0
             self.status = 'In progress'            
-            print ('\nGridWorld reset and populated with inheritance.\n')
+            if self.verbose:
+                print ('\nGridWorld reset and populated with inheritance.\n')
                     
         # Don't inherit
         else:
             del self.positions   
             del self.beginning_positions
             del self.blobs
-            print ('\nGridWorld reset.\n')
+            if self.verbose:
+                print ('\nGridWorld reset.\n')
     
     def play(self, duration=1, beta=0.5):
         current_time = deepcopy(self.time)
@@ -174,12 +176,14 @@ class GridWorld:
             for blob in self.blobs:
                 if self.time >= blob.max_age:
                     blob.status = 'Died of old age'
-                    print ('Blob name',str(blob.name), 'dead. \t-', blob.status)
+                    if self.verbose:
+                        print ('Blob name',str(blob.name), 'dead. \t-', blob.status)
                     self.population_count = self.population_count - 1
 
             # Check world end
             if self.population_count <= 0:
-                print ('\nGame Finished.\n')
+                if self.verbose:
+                    print ('\nGame Finished.\n')
                 self.status = 'Finished'
     
     def update_board(self, time = None):
@@ -326,11 +330,13 @@ grid = np.zeros((3,5))
 grid[1][4] = 1
 grid[0] = [-10, -10, -10, -10, -10]
 grid[2] = [-10, -10, -10, -10, -10]
-print (grid)
+print(grid)
 
 # Populate gridworld
-g2 = GridWorld.create(grid=grid, population_count=1, 
-                      initial_state = [[[0, (1,0)]]])
+g2 = GridWorld.create(grid=grid, 
+                      population_count=1, 
+                      initial_state = [[[0, (1,0)]]], 
+                      verbose=False)
 g2.populate()
 g2.show_board(figsize=(8,5), reward_overlay = True)
 
@@ -347,6 +353,7 @@ plt.plot(rewards_list)
 
 # Verbose
 # Time=0 error
+
 
 # =============================================================================
 # Example 3: Valley Treasure
