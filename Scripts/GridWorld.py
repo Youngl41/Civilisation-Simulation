@@ -42,6 +42,8 @@ class GridWorld:
         self.status = 'Not Started'
         self.total_rewards = 0
         self.verbose = verbose
+        self.iteration_count = 0
+        self.iteration_rewards = []
         if initial_state:
             self.positions = initial_state
             self.beginning_positions = deepcopy(initial_state)
@@ -113,7 +115,6 @@ class GridWorld:
         self.status = 'Not Started'
         self.population_count = population_count
         self.beginning_population_count = population_count
-        self.total_rewards = 0
         if inherit == True:
             self.positions = deepcopy(self.beginning_positions)
             
@@ -129,19 +130,25 @@ class GridWorld:
             # Update parameters
             self.blobs = blobs
             self.time = 0
-            self.status = 'In progress'            
+            self.status = 'In progress' 
+            self.iteration_count = self.iteration_count+1
+            self.iteration_rewards.append(self.total_rewards)
+            self.total_rewards = 0
             if self.verbose:
                 print ('\nGridWorld reset and populated with inheritance.\n')
                     
         # Don't inherit
         else:
+            self.total_rewards = 0
             del self.positions   
             del self.beginning_positions
             del self.blobs
+            self.iteration_count=0
+            self.iteration_rewards=[]
             if self.verbose:
                 print ('\nGridWorld reset.\n')
     
-    def play(self, duration=1, beta=0.5):
+    def play(self, duration=1, beta=0.5, plan_flag=False):
         current_time = deepcopy(self.time)
         
         if self.status == 'Finished':
@@ -158,7 +165,10 @@ class GridWorld:
             positions = []
             blobs = []
             for blob in self.blobs:
-                new_pos = blob.update_and_get_policy(grid=self.grid, beta=beta, reroll_chance=0.1)
+                if not plan_flag:
+                    new_pos = blob.update_and_get_policy(grid=self.grid, beta=beta, reroll_chance=0.01)
+                else:
+                    new_pos = blob.update_and_get_plan(grid=self.grid, beta=beta)
                 positions.append([blob.name, new_pos])
                 blob.coords = new_pos
                 blobs.append(blob)
@@ -185,6 +195,27 @@ class GridWorld:
                 if self.verbose:
                     print ('\nGame Finished.\n')
                 self.status = 'Finished'
+    
+    def play_iteratively(self, iteration_count=100, beta=0.5, 
+                         plan_flag=False, population_count=1, verbose=1):        
+        # Play iterations
+        for iteration in range(iteration_count):
+            # Play until game status is finished
+            while self.status != 'Finished':
+                self.play(duration=1, beta=beta, plan_flag=plan_flag)
+            self.reset(population_count=population_count, inherit=True)
+        
+        # Plot rewards
+        if verbose:
+            plt.plot(self.iteration_rewards)
+            plt.title('Total reward after each iteration of play')
+            plt.xlabel('Iteration count')
+            plt.ylabel('Total reward')
+            plt.show()
+            
+        # Plot value grid for first blob
+            print('\nValue grid for first blob\n')    
+            print(self.blobs[0].value_grid)
     
     def update_board(self, time = None):
         '''

@@ -70,22 +70,23 @@ print (grid)
 
 # Populate gridworld
 g2 = GridWorld.create(grid=grid, population_count=1, 
-                      initial_state = [[[0, (2,0)]]])
+                      initial_state = [[[0, (2,0)]]],
+                      verbose=True)
 g2.populate()
 g2.show_board(figsize=(8,5), reward_overlay = True)
 
-# Iterate
-itertion_number = 100
-rewards_list = []
-for play_number in range(itertion_number):
-    g2.play(duration=30, beta=0.8)
-    rewards_list.append(g2.total_rewards)
-    g2.reset(population_count=1, inherit=True)
-    #print (g2.blobs[0].value_grid)
+# Iterative training
+g2.play_iteratively(iteration_count=100, beta=0.5, 
+                         plan_flag=False, population_count=1, verbose=1)
+print('Number of iterations:\t', g2.iteration_count)
 
-plt.plot(rewards_list)
+# Play one game with plan
+g2.play(duration=30, beta=0.8, plan_flag=True)
+print('Total reward:\t\t', g2.total_rewards)
+print('\nValue grid for first blob\n')
+print(np.round(g2.blobs[0].value_grid, 2))
 
-g2.play(duration=30, beta=0.8)
+# Save plan in action
 g2.save_video(save_path = os.path.join(main_dir, 'Temp/example_1.mp4'),
              start_time = 0, end_time = 30, 
              fps = 3, dpi = 60, figsize=(5,8))
@@ -95,8 +96,8 @@ g2.save_video(save_path = os.path.join(main_dir, 'Temp/example_1.mp4'),
 # Example 2: Pitfall Road
 # =============================================================================
 rnd.seed(43)
-grid = np.zeros((3,5))
-grid[1][4] = 1
+grid = np.zeros((3,5))#-0.5
+grid[1][4] = 5
 grid[0] = [-10, -10, -10, -10, -10]
 grid[2] = [-10, -10, -10, -10, -10]
 print(grid)
@@ -109,70 +110,109 @@ g2 = GridWorld.create(grid=grid,
 g2.populate()
 g2.show_board(figsize=(8,5), reward_overlay = True)
 
-# Iterate
-itertion_number = 10
-rewards_list = []
-for play_number in range(itertion_number):
-    g2.play(duration=30, beta=0.8)
-    rewards_list.append(g2.total_rewards)
-    g2.reset(population_count=1, inherit=True)
-    #print (g2.blobs[0].value_grid)
+# Iterative training
+g2.play_iteratively(iteration_count=20, beta=0.5, 
+                         plan_flag=False, population_count=1, verbose=1)
+print('Number of iterations:\t', g2.iteration_count)
 
-plt.plot(rewards_list)
+# Play one game with plan
+g2.play(duration=30, beta=0.8, plan_flag=True)
+print('Total reward:\t\t', g2.total_rewards)
+print('\nValue grid for first blob\n')
+print(np.round(g2.blobs[0].value_grid, 2))
 
-# Time=0 error
-g2.update_board(time=0)
+# Save plan in action
+g2.save_video(save_path = os.path.join(main_dir, 'Temp/example_2.mp4'),
+             start_time = 0, end_time = 30, 
+             fps = 3, dpi = 60, figsize=(5,8))
 
 
-g2 = GridWorld.create(grid=grid, 
-                      population_count=1, 
-                      initial_state = [[[0, (2,0)]]], 
-                      verbose=False)
-g2.populate()
+
+# Iterate manually
+g2.play(duration=1, beta=0.5, plan_flag=False)
 g2.show_board(figsize=(8,5), reward_overlay = True)
-
-g2.play(duration=30, beta=0.99)
-g2.show_board(figsize=(8,5), reward_overlay = True)
+print (g2.blobs[0].value_grid)
+print ('Total Reward:\t', g2.total_rewards)
 g2.reset(population_count=1, inherit=True)
-
-g2.show_board(time=0,figsize=(8,5), reward_overlay = True)
-g2.positions
+plt.plot(g2.iteration_rewards)
 
 
 # =============================================================================
 # Example 3: Valley Treasure
 # =============================================================================
 rnd.seed(43)
-grid = np.zeros((5,5))
+grid = np.zeros((5,5))#-0.5
 grid[2][4] = 1
 grid[0][4] = 100
 grid[1] = [-10, -10, 0, -10, -10]
 grid[3] = [-10, -10, -10, -10, -10]
 
 # Populate gridworld
-g1 = GridWorld.create(grid=grid, population_count=1, 
+g3 = GridWorld.create(grid=grid, population_count=1, 
                       initial_state = [[[0, (2,0)]]],
                       verbose=False)
-g1.populate()
-g1.show_board(figsize=(8,5), reward_overlay = True)
+g3.populate()
+g3.show_board(figsize=(8,5), reward_overlay = True)
 
-# Iterate
-g1.play(duration=30, beta=0.99)
-g1.show_board(figsize=(8,5), reward_overlay = True)
-print ('Total Reward:\t', g1.total_rewards)
-g1.reset(population_count=1, inherit=True)
-print (g1.blobs[0].value_grid)
+# Iterative training
+g3.play_iteratively(iteration_count=10000, beta=0.65,
+                         plan_flag=False, population_count=1, verbose=1)
+print('\nNumber of iterations:\t', g3.iteration_count)
+print('\nValue grid for first blob\n')
+print(np.round(g3.blobs[0].value_grid, 2).astype(int))
 
-# Iterate
-itertion_number = 3000
-rewards_list = []
-for play_number in range(itertion_number):
-    g1.play(duration=30, beta=0.9)
-    rewards_list.append(g1.total_rewards)
-    g1.reset(population_count=1, inherit=True)
-    #print (g1.blobs[0].value_grid)
+# Play one game with plan
+g3.play(duration=30, beta=0.8, plan_flag=True)
+print('Total reward:\t\t', g3.total_rewards)
+print('\nValue grid for first blob\n')
+print(np.round(g3.blobs[0].value_grid, 2))
 
-plt.plot(rewards_list)
-plt.show()
-plt.imshow(g1.blobs[0].value_grid)
+# Save plan in action
+g2.save_video(save_path = os.path.join(main_dir, 'Temp/example_3.mp4'),
+             start_time = 0, end_time = 30, 
+             fps = 3, dpi = 60, figsize=(5,8))
+
+
+# =============================================================================
+# Example 4: Valley Hidden Treasure
+# =============================================================================
+rnd.seed(43)
+grid = np.zeros((5,5))-0.5
+grid[2][4] = 1
+grid[0][4] = 100
+grid[1] = [-10, -10, -10, -10, -10]
+grid[3] = [-10, -10, -10, -10, -10]
+
+# Populate gridworld
+g3 = GridWorld.create(grid=grid, population_count=1, 
+                      initial_state = [[[0, (2,0)]]],
+                      verbose=False)
+g3.populate()
+g3.show_board(figsize=(8,5), reward_overlay = True)
+
+# Iterative training
+g3.play_iteratively(iteration_count=10000, beta=0.8,
+                         plan_flag=False, population_count=1, verbose=1)
+print('\nNumber of iterations:\t', g3.iteration_count)
+
+# Play one game with plan
+g3.play(duration=30, beta=0.8, plan_flag=True)
+print('Total reward:\t\t', g3.total_rewards)
+print('\nValue grid for first blob\n')
+print(np.round(g3.blobs[0].value_grid, 2))
+
+# Save plan in action
+g3.save_video(save_path = os.path.join(main_dir, 'Temp/example_3.mp4'),
+             start_time = 0, end_time = 30, 
+             fps = 3, dpi = 60, figsize=(5,8))
+
+# Plot reward iterations in groups
+df = pd.DataFrame(g3.iteration_rewards)
+df.columns = ['total_reward']
+group_size = 100
+df.loc[:,'grouped'] = (df.index / group_size).astype(int)
+df.groupby('grouped')['total_reward'].agg('mean').plot(figsize = (9,5))
+plt.title('Total reward after each iteration of play')
+plt.xlabel('Iteration count (in ' + str(group_size) + "'s)")
+plt.ylabel('Total reward')
 plt.show()
