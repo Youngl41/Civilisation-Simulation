@@ -18,13 +18,13 @@ import pandas as pd
 import random as rnd
 import matplotlib.pyplot as plt
 
-main_dir = '/Users/Young/Documents/Capgemini/Learning/Machine Learning/Reinforcement Learning/Civilisation-Simulation'
-sys.path.append(os.path.join(main_dir, 'Scripts/Simulation Functions'))
-sys.path.append(os.path.join(main_dir, 'Scripts'))
-from Blob import Blob
-from GridWorld import GridWorld
-from simulation_utility import sample_coords
-from simulation_utility import find_possible_actions
+main_dir = '/Users/young/Documents/projects/genesis_ai/blobs'
+sys.path.append(os.path.join(main_dir, 'scripts/utility'))
+sys.path.append(os.path.join(main_dir, 'scripts'))
+from blob import Blob
+from gridworld import GridWorld
+from util_simulation import sample_coords
+from util_simulation import find_possible_actions
 
 
 # =============================================================================
@@ -87,9 +87,9 @@ print('\nValue grid for first blob\n')
 print(np.round(g2.blobs[0].value_grid, 2))
 
 # Save plan in action
-g2.save_video(save_path = os.path.join(main_dir, 'Temp/example_1.mp4'),
+g2.save_video(save_path = os.path.join(main_dir, 'results/example_1.mp4'),
              start_time = 0, end_time = 30, 
-             fps = 3, dpi = 60, figsize=(5,8))
+             fps = 3, dpi = 20, figsize=(5,8))
 
 
 # =============================================================================
@@ -111,7 +111,7 @@ g2.populate()
 g2.show_board(figsize=(8,5), reward_overlay = True)
 
 # Iterative training
-g2.play_iteratively(iteration_count=20, beta=0.5, 
+g2.play_iteratively(iteration_count=500, beta=0.5, 
                          plan_flag=False, population_count=1, verbose=1)
 print('Number of iterations:\t', g2.iteration_count)
 
@@ -122,11 +122,9 @@ print('\nValue grid for first blob\n')
 print(np.round(g2.blobs[0].value_grid, 2))
 
 # Save plan in action
-g2.save_video(save_path = os.path.join(main_dir, 'Temp/example_2.mp4'),
+g2.save_video(save_path = os.path.join(main_dir, 'results/example_2.mp4'),
              start_time = 0, end_time = 30, 
              fps = 3, dpi = 60, figsize=(5,8))
-
-
 
 # Iterate manually
 g2.play(duration=1, beta=0.5, plan_flag=False)
@@ -143,7 +141,7 @@ plt.plot(g2.iteration_rewards)
 rnd.seed(43)
 grid = np.zeros((5,5))#-0.5
 grid[2][4] = 1
-grid[0][4] = 100
+grid[0][4] = 10
 grid[1] = [-10, -10, 0, -10, -10]
 grid[3] = [-10, -10, -10, -10, -10]
 
@@ -155,22 +153,22 @@ g3.populate()
 g3.show_board(figsize=(8,5), reward_overlay = True)
 
 # Iterative training
-g3.play_iteratively(iteration_count=10000, beta=0.65,
+g3.play_iteratively(iteration_count=100, beta=0.9, alpha=0.1, reroll_chance=0.3,
                          plan_flag=False, population_count=1, verbose=1)
 print('\nNumber of iterations:\t', g3.iteration_count)
 print('\nValue grid for first blob\n')
 print(np.round(g3.blobs[0].value_grid, 2).astype(int))
 
 # Play one game with plan
-g3.play(duration=30, beta=0.8, plan_flag=True)
+g3.play(duration=30, beta=0.9, plan_flag=True)
 print('Total reward:\t\t', g3.total_rewards)
 print('\nValue grid for first blob\n')
-print(np.round(g3.blobs[0].value_grid, 2))
+print(np.round(g3.blobs[0].value_grid, 0))
 
 # Save plan in action
-g2.save_video(save_path = os.path.join(main_dir, 'Temp/example_3.mp4'),
+g3.save_video(save_path = os.path.join(main_dir, 'results/example_3.mp4'),
              start_time = 0, end_time = 30, 
-             fps = 3, dpi = 60, figsize=(5,8))
+             fps = 5, dpi = 60, figsize=(5,8))
 
 
 # =============================================================================
@@ -191,7 +189,7 @@ g3.populate()
 g3.show_board(figsize=(8,5), reward_overlay = True)
 
 # Iterative training
-g3.play_iteratively(iteration_count=10000, beta=0.8,
+g3.play_iteratively(iteration_count=10000, beta=0.9, alpha=0.1
                          plan_flag=False, population_count=1, verbose=1)
 print('\nNumber of iterations:\t', g3.iteration_count)
 
@@ -199,10 +197,10 @@ print('\nNumber of iterations:\t', g3.iteration_count)
 g3.play(duration=30, beta=0.8, plan_flag=True)
 print('Total reward:\t\t', g3.total_rewards)
 print('\nValue grid for first blob\n')
-print(np.round(g3.blobs[0].value_grid, 2))
+print(np.round(g3.blobs[0].value_grid, 0))
 
 # Save plan in action
-g3.save_video(save_path = os.path.join(main_dir, 'Temp/example_3.mp4'),
+g3.save_video(save_path = os.path.join(main_dir, 'results/example_3.mp4'),
              start_time = 0, end_time = 30, 
              fps = 3, dpi = 60, figsize=(5,8))
 

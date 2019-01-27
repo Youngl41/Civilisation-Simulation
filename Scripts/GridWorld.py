@@ -18,16 +18,17 @@ import pandas as pd
 import random as rnd
 import matplotlib.pyplot as plt
 
+from tqdm import tqdm
 from copy import deepcopy
 from matplotlib.animation import FuncAnimation
 from matplotlib.animation import FFMpegFileWriter
 
-main_dir = '/Users/Young/Documents/Capgemini/Learning/Machine Learning/Reinforcement Learning/Civilisation-Simulation'
-sys.path.append(os.path.join(main_dir, 'Scripts/Simulation Functions'))
-sys.path.append(os.path.join(main_dir, 'Scripts'))
-from Blob import Blob
-from simulation_utility import sample_coords
-from simulation_utility import find_possible_actions
+main_dir = '/Users/young/Documents/projects/genesis_ai/blobs'
+sys.path.append(os.path.join(main_dir, 'scripts/utility'))
+sys.path.append(os.path.join(main_dir, 'scripts'))
+from blob import Blob
+from util_simulation import sample_coords
+from util_simulation import find_possible_actions
 
 
 #==============================================================================
@@ -148,7 +149,8 @@ class GridWorld:
             if self.verbose:
                 print ('\nGridWorld reset.\n')
     
-    def play(self, duration=1, beta=0.5, plan_flag=False):
+    def play(self, duration=1, beta=0.5, alpha=0.2, plan_flag=False,
+            reroll_chance=0.1):
         current_time = deepcopy(self.time)
         
         if self.status == 'Finished':
@@ -166,7 +168,7 @@ class GridWorld:
             blobs = []
             for blob in self.blobs:
                 if not plan_flag:
-                    new_pos = blob.update_and_get_policy(grid=self.grid, beta=beta, reroll_chance=0.01)
+                    new_pos = blob.update_and_get_policy(grid=self.grid, beta=beta, alpha=alpha, reroll_chance=reroll_chance)
                 else:
                     new_pos = blob.update_and_get_plan(grid=self.grid, beta=beta)
                 positions.append([blob.name, new_pos])
@@ -196,13 +198,13 @@ class GridWorld:
                     print ('\nGame Finished.\n')
                 self.status = 'Finished'
     
-    def play_iteratively(self, iteration_count=100, beta=0.5, 
-                         plan_flag=False, population_count=1, verbose=1):        
+    def play_iteratively(self, iteration_count=100, beta=0.5, alpha=0.2, 
+                         reroll_chance=0.1, plan_flag=False, population_count=1, verbose=1):        
         # Play iterations
-        for iteration in range(iteration_count):
+        for iteration in tqdm(range(iteration_count)):
             # Play until game status is finished
             while self.status != 'Finished':
-                self.play(duration=1, beta=beta, plan_flag=plan_flag)
+                self.play(duration=1, beta=beta, alpha=alpha, reroll_chance=reroll_chance, plan_flag=plan_flag)
             self.reset(population_count=population_count, inherit=True)
         
         # Plot rewards
